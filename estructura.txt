@@ -1,0 +1,10 @@
+docker_glpi/
+├── docker-compose.yml
+├── Dockerfile
+├── glpi/
+│   ├── index.php
+│   ├── install/
+│   ├── config/
+│   └── ... otros archivos de GLPI
+├── apache-config.conf
+└── .htaccess

@@ -1,0 +1,52 @@
+version: "3.8"  # Especificamos la versión más reciente de Docker Compose.
+
+services:
+  apache-php:  # Servicio que corre Apache + PHP con el Dockerfile que configuramos previamente.
+    build: .  # Docker Compose construye la imagen usando el Dockerfile en el directorio actual.
+    container_name: apache_php  # Nombre del contenedor.
+    volumes:
+      - ./htmlLoc:/var/www/html  # Mapea la carpeta 'htmlLoc' local a '/var/www/html' en el contenedor.
+    ports:
+      - "8080:80"  # Mapea el puerto 80 del contenedor (Apache) al puerto 8080 del host.
+    environment:
+      - PHP_UPLOAD_MAX_FILESIZE=50M  # Tamaño máximo de archivo que se puede subir.
+      - PHP_POST_MAX_SIZE=50M  # Tamaño máximo de la solicitud POST.
+    depends_on:
+      - db  # Asegura que el contenedor Apache se inicie después de que la base de datos esté lista.
+    networks:
+      - glpi_network  # Red interna para que los contenedores se comuniquen entre sí.
+
+  db:  # Servicio para MySQL
+    image: mysql:latest  # Usamos la última versión estable de MySQL.
+    container_name: glpi_db  # Nombre del contenedor de MySQL.
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password  # Contraseña para el usuario root.
+      MYSQL_DATABASE: glpi_db  # Base de datos que se creará para GLPI.
+      MYSQL_USER: glpi_user  # Usuario de MySQL.
+      MYSQL_PASSWORD: glpi_password  # Contraseña para el usuario de MySQL.
+    volumes:
+      - ./mysql_data:/var/lib/mysql  # Mapea los datos de la base de datos para persistencia.
+    networks:
+      - glpi_network  # Red interna para MySQL.
+
+  phpmyadmin:  # Servicio para phpMyAdmin.
+    image: phpmyadmin/phpmyadmin  # Usamos la imagen oficial de phpMyAdmin.
+    container_name: phpmyadmin  # Nombre del contenedor de phpMyAdmin.
+    environment:
+      PMA_HOST: db  # Conexión con el contenedor MySQL.
+      PMA_USER: glpi_user  # Usuario para acceder a MySQL desde phpMyAdmin.
+      PMA_PASSWORD: glpi_password  # Contraseña para el usuario de MySQL.
+    ports:
+      - "8081:80"  # Mapea el puerto 80 de phpMyAdmin al puerto 8081 en el host.
+    networks:
+      - glpi_network  # Red interna para phpMyAdmin.
+
+# Define las redes entre los contenedores.
+networks:
+  glpi_network:
+    driver: bridge  # Usamos la red tipo 'bridge' para que los contenedores se comuniquen.
+
+# Define los volúmenes persistentes.
+volumes:
+  db_data:  # Volumen para persistir los datos de MySQL.
+    driver: local  # Usamos el volumen local.

@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /
+
+# Evita que la URL sea redirigida a la carpeta de instalación
+RewriteCond %{REQUEST_URI} ^/install/
+RewriteRule ^.*$ - [L]  # No se realiza ninguna redirección si la URL contiene '/install'
